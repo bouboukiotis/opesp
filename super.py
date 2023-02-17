@@ -10,8 +10,9 @@ from elsapy.elssearch import ElsSearch
 
 # from pybliometrics.scopus import AbstractRetrieval
 # from pybliometrics.scopus import AffiliationSearch
+# from pybliometrics.scopus import CitationOverview
 
-#from pybliometrics.scopus import *
+from pybliometrics.scopus import *
 from pyscopus import Scopus
 from datetime import date
 
@@ -136,12 +137,16 @@ file_type = "uni_no_dept"
 
 # author_docs('56500820900',15)
 
-search_df = scopus.search("AU-ID(56500820900)", count=30000)
-print(search_df)
 
+# search_df = scopus.search("AU-ID(56500820900) AND AF-ID(60012296)", count=9000)
+# search_df.to_csv("/home/pboump/projects/scopus/elsapy/files/pubs_auth.csv",sep=';')
 
+identifier = ["10.1016/S0140-6736(10)60484-9"]
+co = CitationOverview(identifier,id_type='doi',start=2017,end=2022,refresh=True, citation="exclude-self")
+print(co.rangeCount)
 
-
+# ab = AbstractRetrieval("10.1016/j.softx.2019.100263")
+# print(ab.title)
 
 # author_scopus_id = '56500820900'
 # status, search_result, npubs, ncits, hindex = auth_metrics(author_scopus_id, client)
