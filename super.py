@@ -46,7 +46,7 @@ def find_scopus_ID(first_name,last_name,df,i):
             df.loc[i, 'scopus_ID'] = "NA"
             continue
 
-def batch_search(df_members_list):
+def batch_search_authors(df_members_list):
    
     i=0 # for iteration purpose of dataframe in order to edit scopus ID values
 
@@ -60,6 +60,32 @@ def batch_search(df_members_list):
         i+=1
 
     return(df_members_list)
+
+def batch_search_citations(df_author_docs,year_range):
+   
+    i=0 # for iteration purpose of dataframe in order to edit scopus ID values
+
+    # iterate dataframe and extract first name and last name
+    for row in df_author_docs.itertuples():
+        
+        doc_scopus_id = row[2]
+        lname = row[2]
+
+        find_scopus_ID(fname.strip(), lname.strip(),df_author_docs,i)
+        i+=1
+
+        # search_df = scopus.search("AU-ID(56500820900) AND AF-ID(60012296)", count=9000)
+        # search_df.to_csv("/home/pboump/projects/scopus/elsapy/files/pubs_auth.csv",sep=';')
+
+        # identifier = ["10.1016/S0140-6736(10)60484-9"]
+        identifier = ["85119091250"]
+        co = CitationOverview(identifier,id_type='scopus_id',start=2017,end=2022,refresh=True, citation="exclude-self")
+        print(co.rangeCount)
+
+    return(df_author_docs)
+
+
+
 
 ## Initialize doc search object using Scopus and execute search, retrieving all results
 def author_docs(author_id, year_range):
@@ -128,7 +154,7 @@ file_type = "uni_no_dept"
 # demonstrate the filepath according to each name
 # filename = pd.read_csv("/home/pboump/projects/scopus/elsapy/files/"+str(file_type)+".csv",sep=';')
 
-# results_df = batch_search(filename)
+# results_df = batch_search_authors(filename)
 
 # # export results to csv
 # results_df.to_csv("/home/pboump/projects/scopus/elsapy/files/"+str(file_type)+"_ID.csv",sep=';')
@@ -141,8 +167,9 @@ file_type = "uni_no_dept"
 # search_df = scopus.search("AU-ID(56500820900) AND AF-ID(60012296)", count=9000)
 # search_df.to_csv("/home/pboump/projects/scopus/elsapy/files/pubs_auth.csv",sep=';')
 
-identifier = ["10.1016/S0140-6736(10)60484-9"]
-co = CitationOverview(identifier,id_type='doi',start=2017,end=2022,refresh=True, citation="exclude-self")
+# identifier = ["10.1016/S0140-6736(10)60484-9"]
+identifier = ["85119091250"]
+co = CitationOverview(identifier,id_type='scopus_id',start=2017,end=2022,refresh=True, citation="exclude-self")
 print(co.rangeCount)
 
 # ab = AbstractRetrieval("10.1016/j.softx.2019.100263")
