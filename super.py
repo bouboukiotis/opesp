@@ -61,31 +61,39 @@ def batch_search_authors(df_members_list):
 
     return(df_members_list)
 
-def batch_search_citations(df_author_docs,year_range):
+def batch_search_citations(author_id, year_range, citation_type):
    
+    
     i=0 # for iteration purpose of dataframe in order to edit scopus ID values
 
-    # iterate dataframe and extract first name and last name
-    for row in df_author_docs.itertuples():
-        
-        doc_scopus_id = row[2]
-        lname = row[2]
+    if (year_range == 1):
 
-        find_scopus_ID(fname.strip(), lname.strip(),df_author_docs,i)
-        i+=1
+        year = current_year - 1
+        search_df = scopus.search('AU-ID(%s)'%author_id + ' AND AF-ID(%s)'%affiliation_hua_id, count=9000)
+        # search_df.to_csv("/home/pboump/PROJECTS/Python/scopus2/elsapy/files/pubs_auth.csv",sep=';')
+   
+        # iterate dataframe and extract first name and last name
+        for row in search_df.itertuples():
+            
+            doc_year = row[9].split("-")
+            doc_scopus_id = row[1]
 
-        # search_df = scopus.search("AU-ID(56500820900) AND AF-ID(60012296)", count=9000)
-        # search_df.to_csv("/home/pboump/projects/scopus/elsapy/files/pubs_auth.csv",sep=';')
+            if (int(year) == int(doc_year[0])):
+                print(doc_year[0],doc_scopus_id)
+                co = CitationOverview(doc_scopus_id,id_type='scopus_id',start=1970,end=2023,refresh=True, citation="exclude-self")
+                # print(co.rangeCount)
+            # find_scopus_ID(fname.strip(), lname.strip(),df_author_docs,i)
+            i+=1
 
-        # identifier = ["10.1016/S0140-6736(10)60484-9"]
-        identifier = ["85119091250"]
-        co = CitationOverview(identifier,id_type='scopus_id',start=2017,end=2022,refresh=True, citation="exclude-self")
-        print(co.rangeCount)
+    #     # search_df = scopus.search("AU-ID(56500820900) AND AF-ID(60012296)", count=9000)
+    #     # search_df.to_csv("/home/pboump/projects/scopus/elsapy/files/pubs_auth.csv",sep=';')
 
-    return(df_author_docs)
+    #     # identifier = ["10.1016/S0140-6736(10)60484-9"]
+    #     identifier = ["85119091250"]
+    #     co = CitationOverview(identifier,id_type='scopus_id',start=2017,end=2022,refresh=True, citation="exclude-self")
+    #     print(co.rangeCount)
 
-
-
+    # return(df_author_docs)
 
 ## Initialize doc search object using Scopus and execute search, retrieving all results
 def author_docs(author_id, year_range):
@@ -111,34 +119,6 @@ def author_docs(author_id, year_range):
 
     print ("Author has", result, "documents in this year range.")
 
-def auth_metrics(auth_id, client):
-    """Read author metrics for a given Scopus author ID auth_id
-    client - object of the ElsClient class 
-    reurns status, author data, total number of paers, citations and h-index """
-    
-    my_auth = ElsAuthor(uri = 'https://api.elsevier.com/content/author/author_id/'+auth_id) 
-
-    if my_auth.read(client):
-        status = 'success'
-    else:
-        status = 'error'
-        return status, None, None, None, None
-    
-    my_auth.read_metrics(client)
-
-    if my_auth._data==None:
-        npapers, ncitation, hindex = None, None, None
-        status = 'error'
-    else:
-        status = 'success'
-        npapers = my_auth._data['coredata']['document-count']
-        ncitation = my_auth._data['coredata']['citation-count']
-        hindex = my_auth._data['h-index']
-
-    print(my_auth.read_docs(client))
-
-        
-    return status,my_auth._data, npapers, ncitation, hindex
 
 
 # author_scopus_id = '56500820900'
@@ -163,14 +143,21 @@ file_type = "uni_no_dept"
 
 # author_docs('56500820900',15)
 
-
+# #################################################################################################################
 # search_df = scopus.search("AU-ID(56500820900) AND AF-ID(60012296)", count=9000)
-# search_df.to_csv("/home/pboump/projects/scopus/elsapy/files/pubs_auth.csv",sep=';')
+# search_df.to_csv("/home/pboump/PROJECTS/Python/scopus2/elsapy/files/pubs_auth.csv",sep=';')
 
-# identifier = ["10.1016/S0140-6736(10)60484-9"]
-identifier = ["85119091250"]
-co = CitationOverview(identifier,id_type='scopus_id',start=2017,end=2022,refresh=True, citation="exclude-self")
-print(co.rangeCount)
+# # identifier = ["10.1016/S0140-6736(10)60484-9"]
+# identifier = ["85119091250"]
+# co = CitationOverview(identifier,id_type='scopus_id',start=1970,end=2022,refresh=True, citation="exclude-self")
+# print(co.rangeCount)
+# #################################################################################################################
+
+batch_search_citations(author_id='56500820900',year_range=1,citation_type=None)
+
+
+
+
 
 # ab = AbstractRetrieval("10.1016/j.softx.2019.100263")
 # print(ab.title)
