@@ -26,6 +26,8 @@ client = ElsClient(apikey)
 affiliation_hua_name = 'Harokopio'
 affiliation_hua_id = "60012296"
 current_year = date.today().year
+reference_year = current_year - 1
+# year_start = (current_year - (year_range + 1))
 
 # split list with author docs ids into chunks
 def divide_chunks(l, n):
@@ -79,7 +81,7 @@ def count_author_docs(author_id, year_range):
     count = 0
     # doc_year = 1970;
 
-    year = current_year - 1
+    # reference_year = current_year - 1
     year_start = (current_year - (year_range + 1))
     search_df = scopus.search('AU-ID(%s)'%author_id + ' AND AF-ID(%s)'%affiliation_hua_id, count=9000)
     search_df.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/pubs_auth_" + str(author_id) + ".csv",sep=';')
@@ -94,11 +96,11 @@ def count_author_docs(author_id, year_range):
         # exclude books from author documents according to M1.265/M1.266 indicators from OPESP
         if doc_type != None and exception not in doc_type.casefold():
             if year_range == 1:
-                if int(year) == int(doc_year[0]):
+                if int(reference_year) == int(doc_year[0]):
                     author_docs_id.append(doc_scopus_id)
                     count+=1
             else:
-                if (int(doc_year[0]) > int(year_start) and int(doc_year[0]) <= int(year)):
+                if (int(doc_year[0]) > int(year_start) and int(doc_year[0]) <= int(reference_year)):
                     author_docs_id.append(doc_scopus_id)
                     count+=1
         i+=1
@@ -111,8 +113,8 @@ def count_multiple_authors_docs(dept_members_file, year_range):
     count = 0
     # doc_year = 1970;
 
-    year = current_year - 1
-    # year = 2021
+    # reference_year = current_year - 1
+    # reference_year = 2021
     year_start = (current_year - (year_range + 1))
 
     df_dept_members = pd.read_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/"+str(dept_members_file),sep=';',dtype=str)
@@ -123,9 +125,8 @@ def count_multiple_authors_docs(dept_members_file, year_range):
         if ("nan" not in author_scopus_ID):
             print (author_scopus_ID)
             search_df = scopus.search('AU-ID(%s)'%author_scopus_ID + ' AND AF-ID(%s)'%affiliation_hua_id, count=9000)
-            # search_df = scopus.search('AU-ID(%s)'%author_scopus_ID, count=9000)
             # search_df.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/DIT_pubs_auth_" + str(author_scopus_ID) + ".csv",sep=';')
-            search_df.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/" +str(dept_members_file) + "pubs_auth" + ".csv",sep=';',mode='a')
+            search_df.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/DEPT_TOTAL_PUBS_" +str(dept_members_file),sep=';',mode='a')
             exception = "book"
             # iterate dataframe and extract
             for row in search_df.itertuples():
@@ -137,11 +138,11 @@ def count_multiple_authors_docs(dept_members_file, year_range):
                 # exclude books from author documents according to M1.265/M1.266 indicators from OPESP
                 if doc_type != None and exception not in doc_type.casefold():
                     if year_range == 1:
-                        if int(year) == int(doc_year[0]):
+                        if int(reference_year) == int(doc_year[0]):
                             author_docs_id.append(doc_scopus_id)
                             count+=1
                     else:
-                        if (int(doc_year[0]) > int(year_start) and int(doc_year[0]) <= int(year)):
+                        if (int(doc_year[0]) > int(year_start) and int(doc_year[0]) <= int(reference_year)):
                             author_docs_id.append(doc_scopus_id)
                             count+=1
         i+=1
@@ -155,7 +156,7 @@ def batch_search_citations(author_id, year_range, citation_type):
 
     doc_year = 1970;
 
-    year = current_year - 1
+    # reference_year = current_year - 1
     year_start = (current_year - (year_range + 1))
     search_df = scopus.search('AU-ID(%s)'%author_id + ' AND AF-ID(%s)'%affiliation_hua_id, count=9000)
     search_df.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/pubs_auth_" + str(author_id) + ".csv",sep=';')
@@ -174,7 +175,7 @@ def batch_search_citations(author_id, year_range, citation_type):
 
         # An xreiastei na lamvanontai ypopsin anafores gia dimosieyseis poy eginan to teleytaio etos i ta x eti mono
         # Den to thelo giati me noiazei poses anafores eginan to teleytaio xrono gia to synolo ton dimosieyseon, akoma kai an eginan to 1991
-        # if (int(year) == int(doc_year[0])):
+        # if (int(reference_year) == int(doc_year[0])):
         #     # print(doc_year[0],doc_scopus_id)
 
         #     author_docs_id.append(doc_scopus_id)
@@ -194,13 +195,13 @@ def batch_search_citations(author_id, year_range, citation_type):
 
         # year_range == 1 : mono to imerologiako etos anaforas pou einai to proigoumeno ap ayto poy ginetai i ereyna (e.g. to 2023 thelo apotelesmata mono gia to 2022)
         if (year_range == 1):
-            co = CitationOverview(auth_docs_id_chunks[chunk],id_type='scopus_id',start=year,end=year,refresh=True, citation=None)
-            co2 = CitationOverview(auth_docs_id_chunks[chunk],id_type='scopus_id',start=year,end=year,refresh=True, citation="exclude-self")
+            co = CitationOverview(auth_docs_id_chunks[chunk],id_type='scopus_id',start=reference_year,end=reference_year,refresh=True, citation=None)
+            co2 = CitationOverview(auth_docs_id_chunks[chunk],id_type='scopus_id',start=reference_year,end=reference_year,refresh=True, citation="exclude-self")
         
         # year_range != 1 : mono to imerologiako etos anaforas pou einai to proigoumeno ap ayto poy ginetai i ereyna (e.g. to 2023 thelo apotelesmata mono gia to 2022)
         else:
-            co = CitationOverview(auth_docs_id_chunks[chunk],id_type='scopus_id',start=year_start,end=year,refresh=True, citation=None)
-            co2 = CitationOverview(auth_docs_id_chunks[chunk],id_type='scopus_id',start=year_start,end=year,refresh=True, citation="exclude-self")
+            co = CitationOverview(auth_docs_id_chunks[chunk],id_type='scopus_id',start=year_start,end=reference_year,refresh=True, citation=None)
+            co2 = CitationOverview(auth_docs_id_chunks[chunk],id_type='scopus_id',start=year_start,end=reference_year,refresh=True, citation="exclude-self")
         
         citations_sum+=sum(co.rangeCount)
         citations_without_self_sum+=sum(co2.rangeCount)
@@ -225,8 +226,8 @@ def author_docs(author_id, year_range):
     
     if (year_range == 1):
 
-        year = current_year - 1
-        doc_srch = ElsSearch('AF-ID(%s)'%affiliation_hua_id + ' AU-ID(%s)'%author_id + ' AND PUBYEAR = %s'%year,'scopus')
+        # reference_year = current_year - 1
+        doc_srch = ElsSearch('AF-ID(%s)'%affiliation_hua_id + ' AU-ID(%s)'%author_id + ' AND PUBYEAR = %s'%reference_year,'scopus')
     
     else:
         year_start = (current_year - (year_range + 1))
@@ -242,54 +243,71 @@ def author_docs(author_id, year_range):
     else:
         result = len(doc_srch.results)
 
-    print ("Author has", result, "documents in this year range.")
+    print ("Author has", result, "documents in this reference_year range.")
 
-# def count_multiple_citations(docs_list, year_range):
-def count_multiple_citations(year_range):
+def count_multiple_citations(dept_members_file,year_range):
    
     i=0 # for iteration purpose of dataframe in order to edit scopus ID values
-    docs_id_list =[]
-    
-    year = current_year - 1
-    year_start = (current_year - (year_range + 1))
-    
+    author_docs_id =[]
+
     # df_hua_members_docs_5_dedub = pd.read_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/df_hua_members_docs_5_dedub.csv",sep=';')
-    df_hua_members_docs_1_dedub = pd.read_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/df_hua_members_docs_1_dedub.csv",sep=';')
+    # df_hua_members_docs_1_dedub = pd.read_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/df_hua_members_docs_1_dedub.csv",sep=';')
     
+    # search from scopus
+    # search_df = scopus.search('AF-ID(%s)'%affiliation_hua_id, count=9000)
+    # search_df.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/HUA_pubs_" + ".csv",sep=';')
+    # search from stored file
+    search_df = pd.read_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/DEPT_TOTAL_PUBS_" +str(dept_members_file),sep=';')
+    exception = "book"
+    
+    # delete rows with headers (multiple header due to files concatenation)
+    # indexAge = search_df[ (exception not in search_df['subtype_description'].casefold()) | (search_df['Position'] == 'SG') ].index
+    indexAge = search_df[ (search_df['scopus_id'] == 'scopus_id') ].index
+    search_df.drop(indexAge , inplace=True)
+
     # iterate dataframe and extract
-    for row in df_hua_members_docs_1_dedub.itertuples():
+    for row in search_df.itertuples():
         
+        doc_scopus_id = row[2]
+        doc_type = row[15]       
+        # print(doc_type) 
         
-        # doc_scopus_id = row[2]
-        docs_id_list.append(row[2])
-        
+        # exclude books from author documents according to M1.265/M1.266 indicators from OPESP
+        if doc_type != None and exception not in doc_type.casefold():
+            author_docs_id.append(doc_scopus_id)
+
         i+=1
 
+    # print(len(author_docs_id))
+    
     # divide search list into chunks of 25 items in order to search scopus through its API (max=25)
-    docs_id_chunks = list(divide_chunks(docs_id_list, 25))
+    docs_id_chunks = list(divide_chunks(author_docs_id, 25))
     # # print (auth_docs_id_chunks[0],len(auth_docs_id_chunks))
     
     citations_sum = 0
     citations_without_self_sum = 0
+    year_start = (current_year - (year_range + 1))
 
     for chunk in range(len(docs_id_chunks)):
 
     #     # year_range == 1 : mono to imerologiako etos anaforas pou einai to proigoumeno ap ayto poy ginetai i ereyna (e.g. to 2023 thelo apotelesmata mono gia to 2022)
         if (year_range == 1):
-            co = CitationOverview(docs_id_chunks[chunk],id_type='scopus_id',start=year,end=year,refresh=True, citation=None)
-            co2 = CitationOverview(docs_id_chunks[chunk],id_type='scopus_id',start=year,end=year,refresh=True, citation="exclude-self")
+            co = CitationOverview(docs_id_chunks[chunk],id_type='scopus_id',start=reference_year,end=reference_year,refresh=True, citation=None)
+            co2 = CitationOverview(docs_id_chunks[chunk],id_type='scopus_id',start=reference_year,end=reference_year,refresh=True, citation="exclude-self")
         
     #     # year_range != 1 : mono to imerologiako etos anaforas pou einai to proigoumeno ap ayto poy ginetai i ereyna (e.g. to 2023 thelo apotelesmata mono gia to 2022)
-    #     else:
-            co = CitationOverview(docs_id_chunks[chunk],id_type='scopus_id',start=year_start,end=year,refresh=True, citation=None)
-            co2 = CitationOverview(docs_id_chunks[chunk],id_type='scopus_id',start=year_start,end=year,refresh=True, citation="exclude-self")
+        else:
+            co = CitationOverview(docs_id_chunks[chunk],id_type='scopus_id',start=year_start,end=reference_year,refresh=True, citation=None)
+            co2 = CitationOverview(docs_id_chunks[chunk],id_type='scopus_id',start=year_start,end=reference_year,refresh=True, citation="exclude-self")
         
         citations_sum+=sum(co.rangeCount)
         citations_without_self_sum+=sum(co2.rangeCount)
         
-    print("anafores: ", citations_sum)
-    clean_citations = citations_sum - citations_without_self_sum
-    print("eteroanafores: ", clean_citations)
+    # print("anafores: ", citations_sum)
+    # clean_citations = citations_sum - citations_without_self_sum
+    # print("eteroanafores: ", clean_citations)
+    
+    return citations_sum,citations_without_self_sum
 
 
   
@@ -369,21 +387,49 @@ file_type = "uni_no_dept"
 # print("Δείκτης Μ1.266 (Εργασίες με κριτές scopus το έτος αναφοράς) - ΧΑΡΟΚΟΠΕΙΟ ΠΑΝΕΠΙΣΤΗΜΙΟ: ",len(set(hua_members_docs_1)))
 
 # df_hua_members_docs_5 = pd.DataFrame(hua_members_docs_5)
-# df_hua_members_docs_5.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/df_hua_members_docs_5" + ".csv",sep=';')
+# df_hua_members_docs_5.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/all_hua_members_docs_5" + ".csv",sep=';')
 # df_hua_members_docs_5_dedub = pd.DataFrame(set(hua_members_docs_5))
-# df_hua_members_docs_5_dedub.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/df_hua_members_docs_5_dedub" + ".csv",sep=';')
+# df_hua_members_docs_5_dedub.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/all_hua_members_docs_5_dedub" + ".csv",sep=';')
 
 # df_hua_members_docs_1 = pd.DataFrame(hua_members_docs_1)
-# df_hua_members_docs_1.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/df_hua_members_docs_1" + ".csv",sep=';')
+# df_hua_members_docs_1.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/all_hua_members_docs_1" + ".csv",sep=';')
 # df_hua_members_docs_1_dedub = pd.DataFrame(set(hua_members_docs_1))
-# df_hua_members_docs_1_dedub.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/df_hua_members_docs_1_dedub" + ".csv",sep=';')
+# df_hua_members_docs_1_dedub.to_csv("/home/pboump/PROJECTS/Python/scop/elsapy/files/all_hua_members_docs_1_dedub" + ".csv",sep=';')
 
 # #################################################################################################################
 
 # count_author_docs("56252345700",year_range=1)
 # count_multiple_authors_docs()
 
-# count_multiple_citations(year_range=1)
 
-# search_df = scopus.search('AF-ID(%s)'%affiliation_hua_id, count=9000)
-# print(search_df)
+# anafores,eteroanafores = count_multiple_citations("dept_tova_ID.csv",1)
+# print("Δείκτης Μ1.270 (Σύνολο αναφορών των δημοσιεύσεων των μελών στο Scopus στο έτος αναφοράς (31/12).) - ΤΟΒΑ: ",anafores)
+# print("Δείκτης Μ1.233 (Σύνολο ετεραναφορών των δημοσιεύσεων των μελών στο Scopus στο έτος αναφοράς (31/12).) - ΤΟΒΑ: ",eteroanafores)
+
+# anafores,eteroanafores = count_multiple_citations("dept_tova_ID.csv",5)
+# print("Δείκτης Μ1.269 (Σύνολο αναφορών των δημοσιεύσεων των μελών στο Scopus σωρευτικά για τα 5 τελευταία έτη.) - ΤΟΒΑ: ",anafores)
+# print("Δείκτης Μ1.268 (Σύνολο ετεραναφορών των δημοσιεύσεων των μελών στο Scopus σωρευτικά για τα 5 τελευταία έτη.) - ΤΟΒΑ: ",eteroanafores)
+
+# anafores,eteroanafores = count_multiple_citations("dept_tedd_ID.csv",1)
+# print("Δείκτης Μ1.270 (Σύνολο αναφορών των δημοσιεύσεων των μελών στο Scopus στο έτος αναφοράς (31/12).) - ΤΕΔΔ: ",anafores)
+# print("Δείκτης Μ1.233 (Σύνολο ετεραναφορών των δημοσιεύσεων των μελών στο Scopus στο έτος αναφοράς (31/12).) - ΤΕΔΔ: ",eteroanafores)
+
+anafores,eteroanafores = count_multiple_citations("dept_tedd_ID.csv",5)
+print("Δείκτης Μ1.269 (Σύνολο αναφορών των δημοσιεύσεων των μελών στο Scopus σωρευτικά για τα 5 τελευταία έτη.) - ΤΕΔΔ: ",anafores)
+print("Δείκτης Μ1.268 (Σύνολο ετεραναφορών των δημοσιεύσεων των μελών στο Scopus σωρευτικά για τα 5 τελευταία έτη.) - ΤΕΔΔ: ",eteroanafores)
+
+# anafores,eteroanafores = count_multiple_citations("dept_geo_ID.csv",1)
+# print("Δείκτης Μ1.270 (Σύνολο αναφορών των δημοσιεύσεων των μελών στο Scopus στο έτος αναφοράς (31/12).) - ΤΓΕΩ: ",anafores)
+# print("Δείκτης Μ1.233 (Σύνολο ετεραναφορών των δημοσιεύσεων των μελών στο Scopus στο έτος αναφοράς (31/12).) - ΤΓΕΩ: ",eteroanafores)
+
+# anafores,eteroanafores = count_multiple_citations("dept_geo_ID.csv",5)
+# print("Δείκτης Μ1.269 (Σύνολο αναφορών των δημοσιεύσεων των μελών στο Scopus σωρευτικά για τα 5 τελευταία έτη.) - ΤΓΕΩ: ",anafores)
+# print("Δείκτης Μ1.268 (Σύνολο ετεραναφορών των δημοσιεύσεων των μελών στο Scopus σωρευτικά για τα 5 τελευταία έτη.) - ΤΓΕΩ: ",eteroanafores)
+
+# anafores,eteroanafores = count_multiple_citations("dept_dit_ID.csv",1)
+# print("Δείκτης Μ1.270 (Σύνολο αναφορών των δημοσιεύσεων των μελών στο Scopus στο έτος αναφοράς (31/12).) - ΤΠΤ: ",anafores)
+# print("Δείκτης Μ1.233 (Σύνολο ετεραναφορών των δημοσιεύσεων των μελών στο Scopus στο έτος αναφοράς (31/12).) - ΤΠΤ: ",eteroanafores)
+
+# anafores,eteroanafores = count_multiple_citations("dept_dit_ID.csv",5)
+# print("Δείκτης Μ1.269 (Σύνολο αναφορών των δημοσιεύσεων των μελών στο Scopus σωρευτικά για τα 5 τελευταία έτη.) - ΤΠΤ: ",anafores)
+# print("Δείκτης Μ1.268 (Σύνολο ετεραναφορών των δημοσιεύσεων των μελών στο Scopus σωρευτικά για τα 5 τελευταία έτη.) - ΤΠΤ: ",eteroanafores)
